@@ -1,0 +1,124 @@
+:root {
+  --verde: #2c6b4a;
+  --verde-oscuro: #1f4d35;
+  --verde-claro: #eaf2ec;
+  --terracota: #c4553d;
+  --ambar: #b7791f;
+  --fondo: #f6f7f4;
+  --superficie: #ffffff;
+  --texto: #1d2420;
+  --texto-suave: #5d6a62;
+  --borde: #d9e0da;
+  --chat-fondo: #e9e2d6;
+  --burbuja-cliente: #d9fdd3;
+  --burbuja-bot: #ffffff;
+  --radio: 10px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --verde: #5fb486;
+    --verde-oscuro: #8fd1ab;
+    --verde-claro: #1d2b23;
+    --terracota: #e27a62;
+    --ambar: #e0a84b;
+    --fondo: #121614;
+    --superficie: #1b201d;
+    --texto: #e6ece8;
+    --texto-suave: #9aa8a0;
+    --borde: #2f3833;
+    --chat-fondo: #0f1512;
+    --burbuja-cliente: #144d37;
+    --burbuja-bot: #222a26;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+a { color: var(--verde); }
+h1, h2, h3 { margin: 0 0 .5rem; line-height: 1.2; }
+h1 { font-size: 1.5rem; color: var(--verde-oscuro); }
+h2 { font-size: 1.15rem; }
+
+.barra {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .6rem 1rem; background: var(--verde); color: #fff;
+}
+.barra a { color: #fff; text-decoration: none; padding: .25rem .5rem; border-radius: 6px; font-size: .92rem; }
+.barra a:hover, .barra a.activo { background: rgba(255,255,255,.18); }
+.barra .marca { font-weight: 700; font-size: 1.05rem; margin-right: .5rem; }
+.contenido { max-width: 1280px; margin: 0 auto; padding: 1rem; }
+
+.fila { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+.entre { justify-content: space-between; }
+.rejilla { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.tarjeta {
+  background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio);
+  padding: 1rem;
+}
+.suave { color: var(--texto-suave); font-size: .88rem; }
+.etiqueta {
+  display: inline-block; padding: .1rem .5rem; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  background: var(--verde-claro); color: var(--verde-oscuro);
+}
+.etiqueta.alerta { background: var(--terracota); color: #fff; }
+.etiqueta.ambar { background: var(--ambar); color: #fff; }
+
+button, .boton {
+  font: inherit; cursor: pointer; border: 1px solid var(--verde); background: var(--verde); color: #fff;
+  padding: .45rem .9rem; border-radius: 8px; font-weight: 600;
+}
+button:hover { filter: brightness(1.08); }
+button:disabled { opacity: .5; cursor: default; }
+button.secundario { background: transparent; color: var(--verde); }
+button.peligro { background: var(--terracota); border-color: var(--terracota); }
+button.grande { padding: .75rem 1.2rem; font-size: 1.1rem; }
+input, select, textarea {
+  font: inherit; padding: .4rem .6rem; border-radius: 8px; border: 1px solid var(--borde);
+  background: var(--superficie); color: var(--texto); min-width: 0;
+}
+textarea { width: 100%; min-height: 70px; }
+label { display: grid; gap: .2rem; font-size: .88rem; color: var(--texto-suave); }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--borde); vertical-align: top; }
+th { font-size: .8rem; text-transform: uppercase; color: var(--texto-suave); letter-spacing: .03em; }
+.tabla-scroll { overflow-x: auto; }
+
+.error { color: var(--terracota); font-weight: 600; }
+
+/* Cocina: legible a 1 metro (RNF10) */
+.cocina { font-size: 18px; }
+.cocina .tarjeta h2 { font-size: 1.5rem; }
+.cocina .linea { font-size: 1.2rem; padding: .15rem 0; }
+.cocina .obs { color: var(--terracota); font-weight: 600; font-size: 1rem; }
+.tarjeta.demorado { border: 3px solid var(--terracota); }
+
+/* Simulador WhatsApp */
+.telefono {
+  max-width: 460px; margin: 0 auto; border-radius: 18px; overflow: hidden; border: 1px solid var(--borde);
+  display: flex; flex-direction: column; height: calc(100vh - 140px); min-height: 480px;
+}
+.telefono .cabecera { background: var(--verde-oscuro); color: #fff; padding: .7rem 1rem; }
+.telefono .mensajes { flex: 1; overflow-y: auto; background: var(--chat-fondo); padding: .8rem; display: flex; flex-direction: column; gap: .4rem; }
+.burbuja { max-width: 82%; padding: .45rem .7rem; border-radius: 10px; white-space: pre-wrap; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,.12); }
+.burbuja.cliente { align-self: flex-end; background: var(--burbuja-cliente); }
+.burbuja.bot, .burbuja.personal { align-self: flex-start; background: var(--burbuja-bot); }
+.burbuja.personal { border-left: 4px solid var(--ambar); }
+.burbuja .hora { display: block; text-align: right; font-size: .7rem; color: var(--texto-suave); }
+.telefono form { display: flex; gap: .4rem; padding: .5rem; background: var(--superficie); }
+.telefono form input[type="text"] { flex: 1; }
+
+@media (max-width: 640px) {
+  .contenido { padding: .75rem 16px; }
+  .telefono { height: calc(100vh - 120px); border-radius: 0; }
+}
