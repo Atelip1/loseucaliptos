@@ -17,6 +17,14 @@ export interface DatosPlato {
   foto?: string;
 }
 
+/** RF25: foto opcional del plato; solo se aceptan enlaces http(s). */
+function validarFoto(foto?: string): string | undefined {
+  const f = foto?.trim();
+  if (!f) return undefined;
+  if (!/^https?:\/\/\S+$/i.test(f)) throw new ErrorDeDominio("La foto debe ser un enlace que empiece con http:// o https://.");
+  return f;
+}
+
 export class ServicioCarta {
   constructor(private d: Dependencias) {}
 
@@ -79,7 +87,7 @@ export class ServicioCarta {
       precio: d.precio,
       alias: (d.alias ?? []).map((a) => a.trim()).filter(Boolean),
       activo: d.activo ?? true,
-      foto: d.foto,
+      foto: validarFoto(d.foto),
     };
   }
 }

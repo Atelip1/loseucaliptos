@@ -59,12 +59,22 @@ export function crearContenedor(almacen: AlmacenJson): Contenedor {
   };
 }
 
+/**
+ * Carpeta del almacenamiento local. En Vercel el disco es de solo lectura salvo /tmp, que es temporal:
+ * sirve para demostraciones, no para producción (allí se usará el adaptador de Supabase).
+ */
+export function carpetaDatos(): string {
+  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  if (process.env.VERCEL) return path.join("/tmp", "eucaliptos");
+  return path.join(process.cwd(), "data");
+}
+
 const global = globalThis as unknown as { __eucaliptos?: Contenedor };
 
 /** Instancia única por proceso (sobrevive a la recarga en caliente de Next.js en desarrollo). */
 export function contenedor(): Contenedor {
   if (!global.__eucaliptos) {
-    const archivo = path.join(process.cwd(), "data", "db.json");
+    const archivo = path.join(carpetaDatos(), "db.json");
     global.__eucaliptos = crearContenedor(new AlmacenJson(archivo));
   }
   return global.__eucaliptos;

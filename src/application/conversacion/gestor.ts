@@ -200,6 +200,10 @@ export class GestorConversacion {
         return this.agregarItems(ctx, it.items);
       case "QUITAR":
         return this.quitarItems(ctx, it.items);
+      case "CAMBIAR_CANTIDAD":
+        return this.cambiarCantidad(ctx, it.items);
+      case "RECOMENDAR":
+        return this.recomendar(ctx);
       case "VER_CARRITO":
         r.push(T.textoCarrito(c.carrito, ctx.platos));
         return;
@@ -334,6 +338,35 @@ export class GestorConversacion {
     if (!quitados.length) r.push("No encontré ese plato en tu pedido.");
     else r.push(`Listo, quité: ${quitados.join(", ")}.`);
     r.push(T.textoCarrito(c.carrito, ctx.platos));
+  }
+
+  /** RF06: fija la cantidad de un plato del carrito ("que sean 3 chichas"); si no está, lo agrega. */
+  private async cambiarCantidad(ctx: Contexto, items: ItemInterpretado[]) {
+    const { c, r } = ctx;
+    const nuevos: ItemInterpretado[] = [];
+    const cambios: string[] = [];
+    for (const item of items) {
+      const ids = item.platoId ? [item.platoId] : item.candidatos ?? [];
+      const linea = c.carrito.find((l) => ids.includes(l.platoId));
+      if (!linea) {
+        nuevos.push(item);
+        continue;
+      }
+      linea.cantidad = Math.min(50, Math.max(1, item.cantidad));
+      cambios.push(`${linea.cantidad} × ${ctx.platos.get(linea.platoId)?.nombre}`);
+    }
+    if (cambios.length) r.push(`Cambiado ✍️ ${cambios.join(", ")}.`);
+    if (nuevos.length) return this.agregarItems(ctx, nuevos);
+    r.push(`${T.textoCarrito(c.carrito, ctx.platos)}\n\n${T.PREGUNTA_ALGO_MAS}`);
+  }
+
+  private async recomendar(ctx: Contexto) {
+    const disponibles = await this.carta.disponibles(ctx.c.sedeId);
+    const casa = ["carapulcra", "arroz-pato", "pachamanca", "ceviche-pescado"]
+      .map((id) => disponibles.find((p) => p.id === id))
+      .filter((p): p is Plato => !!p);
+    const lista = (casa.length ? casa : disponibles.slice(0, 4)).map((p) => `• *${p.nombre}* — ${formatoSoles(p.precio)}`);
+    ctx.r.push(`⭐ Nuestras especialidades de la casa:\n${lista.join("\n")}\n\nAcompáñalo con una *chicha morada* bien helada. ¿Qué te provoca?`);
   }
 
   private alternativas(plato: Plato, disponibles: Plato[]): string {

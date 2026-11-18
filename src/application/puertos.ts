@@ -173,6 +173,8 @@ export type Intencion =
   | { tipo: "PREGUNTA_PLATO"; platoId?: string; consulta: string }
   | { tipo: "PEDIR"; items: ItemInterpretado[] }
   | { tipo: "QUITAR"; items: ItemInterpretado[] }
+  | { tipo: "CAMBIAR_CANTIDAD"; items: ItemInterpretado[] }
+  | { tipo: "RECOMENDAR" }
   | { tipo: "VER_CARRITO" }
   | { tipo: "TERMINAR" } // "eso es todo", "listo"
   | { tipo: "CONFIRMAR" }

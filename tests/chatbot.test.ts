@@ -39,6 +39,30 @@ describe("Chatbot — flujo CU02 Realizar pedido por WhatsApp", () => {
     expect(await t.decir("si")).toMatch(/2 × Ceviche mixto/);
   });
 
+  it("cambia la cantidad de un plato del carrito (RF06)", async () => {
+    const t = contenedorDePrueba();
+    await iniciar(t);
+    await t.decir("2 chicha y 1 lomo saltado");
+    const r = await t.decir("mejor que sean 4 chichas");
+    expect(r).toMatch(/4 × Chicha morada/);
+    expect(r).toMatch(/Subtotal: \*S\/ 94\.00\*/);
+  });
+
+  it("cocina recibe aviso de pedidos cancelados (CU13 2a)", async () => {
+    const t = contenedorDePrueba();
+    await iniciar(t);
+    await t.decir("1 lomo saltado");
+    await t.decir("listo");
+    await t.decir("2");
+    await t.decir("1");
+    await t.decir("Ana");
+    await t.decir("1");
+    await t.decir("cancelar mi pedido");
+    expect(await t.decir("si")).toMatch(/fue cancelado/);
+    expect(await t.k.pedidos.pendientesCocina("grocio-prado")).toHaveLength(0);
+    expect(await t.k.pedidos.canceladosRecientes("grocio-prado")).toHaveLength(1);
+  });
+
   it("pide aclaración ante un mensaje ambiguo (HU05 CA3)", async () => {
     const t = contenedorDePrueba();
     await iniciar(t);

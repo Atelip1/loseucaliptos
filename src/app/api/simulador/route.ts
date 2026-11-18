@@ -10,8 +10,25 @@ export const dynamic = "force-dynamic";
 export function GET(req: Request) {
   const telefono = new URL(req.url).searchParams.get("telefono");
   return manejar(async () => {
-    const c = await contenedor().deps.conversaciones.obtener(requerido(telefono, "el teléfono"));
-    return { mensajes: c?.mensajes ?? [], derivada: c?.derivada ?? false, paso: c?.paso ?? null };
+    const k = contenedor();
+    const tel = requerido(telefono, "el teléfono");
+    const c = await k.deps.conversaciones.obtener(tel);
+    const platos = new Map((await k.deps.carta.listarPlatos()).map((p) => [p.id, p]));
+    const carrito = (c?.carrito ?? []).map((l) => ({
+      nombre: platos.get(l.platoId)?.nombre ?? "¿?",
+      cantidad: l.cantidad,
+      observacion: l.observacion,
+      subtotal: (platos.get(l.platoId)?.precio ?? 0) * l.cantidad,
+    }));
+    const pedidos = await k.deps.pedidos.listar({ clienteTelefono: tel });
+    return {
+      mensajes: c?.mensajes ?? [],
+      derivada: c?.derivada ?? false,
+      paso: c?.paso ?? null,
+      nombre: c?.nombre ?? null,
+      carrito,
+      totalPedidos: pedidos.length,
+    };
   });
 }
 

@@ -9,7 +9,7 @@ import type {
 } from "@/application/puertos";
 
 const TIPOS = [
-  "SALUDO", "VER_CARTA", "FAQ", "PREGUNTA_PLATO", "PEDIR", "QUITAR", "VER_CARRITO", "TERMINAR",
+  "SALUDO", "VER_CARTA", "FAQ", "PREGUNTA_PLATO", "PEDIR", "QUITAR", "CAMBIAR_CANTIDAD", "RECOMENDAR", "VER_CARRITO", "TERMINAR",
   "CONFIRMAR", "NEGAR", "HUMANO", "ESTADO_PEDIDO", "CANCELAR_PEDIDO", "MODIFICAR_PEDIDO", "GRACIAS",
   "NO_ENTENDIDO",
 ] as const;
@@ -47,7 +47,8 @@ function instrucciones(carta: PlatoCarta[]): string {
   return `Eres el intérprete de mensajes del chatbot de pedidos del Restaurante Los Eucaliptos (Chincha, Perú).
 Clasifica el mensaje del cliente y extrae los platos. Responde SOLO con el JSON del esquema.
 Reglas:
-- tipo PEDIR cuando el cliente pide platos; QUITAR cuando quiere sacar platos del carrito.
+- tipo PEDIR cuando el cliente pide platos; QUITAR cuando quiere sacar platos del carrito;
+  CAMBIAR_CANTIDAD cuando fija la cantidad final de un plato ("que sean 3 chichas"); RECOMENDAR si pide sugerencias.
 - Para cada plato, platoId debe ser EXACTAMENTE un id de la carta. Si el plato no existe, platoId=null y candidatos=[].
 - Si el mensaje es ambiguo (p. ej. "un pescado" y hay varias preparaciones), platoId=null y en candidatos los ids posibles.
 - cantidad: entero; entiende cantidades en letras ("dos") y errores ortográficos. Por defecto 1.
@@ -129,6 +130,8 @@ export function aIntencion(s: SalidaModelo, carta: PlatoCarta[], texto: string):
       return items.length ? { tipo: "PEDIR", items } : { tipo: "NO_ENTENDIDO" };
     case "QUITAR":
       return { tipo: "QUITAR", items };
+    case "CAMBIAR_CANTIDAD":
+      return items.length ? { tipo: "CAMBIAR_CANTIDAD", items } : { tipo: "NO_ENTENDIDO" };
     default:
       return { tipo: s.tipo } as Intencion;
   }

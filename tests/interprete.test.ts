@@ -55,6 +55,16 @@ describe("Intérprete por reglas — criterios de aceptación HU05", () => {
     expect(i("¿qué lleva la carapulcra?")).toMatchObject({ tipo: "PREGUNTA_PLATO", platoId: "carapulcra" });
   });
 
+  it("entiende expresiones coloquiales peruanas", () => {
+    expect(items(i("me mandas 2 ceviches mixtos pe")).map((x) => [x.platoId, x.cantidad])).toEqual([["ceviche-mixto", 2]]);
+    expect(items(i("dos lomos y una inca kola")).map((x) => x.platoId)).toEqual(["lomo-saltado", "gaseosa"]);
+    expect(items(i("el arros con pato")).map((x) => x.platoId)).toEqual(["arroz-pato"]);
+    expect(i("una carapulcra bien picante")).toMatchObject({ tipo: "PEDIR", items: [{ platoId: "carapulcra", observacion: "bien picante" }] });
+    expect(i("¿la carapulcra pica?")).toMatchObject({ tipo: "PREGUNTA_PLATO", platoId: "carapulcra" });
+    expect(i("que me recomiendas").tipo).toBe("RECOMENDAR");
+    expect(i("cambia a 3 chichas")).toMatchObject({ tipo: "CAMBIAR_CANTIDAD", items: [{ platoId: "chicha-morada", cantidad: 3 }] });
+  });
+
   it("reconoce comandos de control", () => {
     expect(i("quiero hablar con una persona").tipo).toBe("HUMANO");
     expect(i("quiero cancelar mi pedido").tipo).toBe("CANCELAR_PEDIDO");

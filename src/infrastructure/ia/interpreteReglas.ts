@@ -27,12 +27,16 @@ const VACIAS = new Set([
   "lleva", "llevan", "tiene", "tienen", "cuesta", "cuestan", "vale", "esta", "es", "son", "como",
   "cuanto", "cuanta", "viene", "trae", "ingredientes", "ingrediente", "picante", "pica", "hay",
   "recomienda", "recomiendas", "cual", "cuales", "sabe", "saber",
+  // muletillas y verbos coloquiales
+  "mandas", "mande", "mandan", "traes", "traen", "traigan", "pe", "pes", "ahi", "porfis", "porfi",
+  "cambia", "cambiala", "cambialo", "cambiame", "sean", "mejor", "ponle", "ponlo", "pongan", "nos",
 ]);
 
 const VERBOS_PEDIDO = [
   "quiero", "quisiera", "queria", "deme", "dame", "denme", "mandame", "mandeme", "manda", "traeme",
   "pedir", "pido", "ordenar", "agrega", "agregame", "agregar", "anade", "anademe", "ponme", "me das",
-  "me da", "para mi", "me pones", "voy a querer", "seria",
+  "me da", "para mi", "me pones", "voy a querer", "seria", "me mandas", "me traes", "nos mandas",
+  "nos traes", "mandame", "me mandan", "me traen",
 ];
 
 /** Palabras que no son platos: si un segmento solo tiene estas, no es un ítem del pedido. */
@@ -44,11 +48,14 @@ const META = new Set([
 
 const MARCAS_OBSERVACION = ["sin", "con poco", "con mucho", "con extra", "extra", "bien", "aparte", "poco", "bastante"];
 
+/** Frases que siempre indican una pregunta sobre un plato. */
 const PALABRAS_PREGUNTA_PLATO = [
-  "que lleva", "que tiene", "de que es", "que es", "ingredientes", "picante", "pica", "cuanto cuesta",
-  "cuanto esta", "cuanto vale", "precio", "cuanto es", "como es", "como viene", "trae", "viene con",
-  "para cuantas personas", "es grande", "recomiendas", "recomienda",
+  "que lleva", "que tiene", "de que es", "que es", "ingredientes", "cuanto cuesta", "cuanto esta",
+  "cuanto vale", "precio", "cuanto es", "como es", "como viene", "viene con", "para cuantas personas",
+  "es grande",
 ];
+/** Palabras que solo indican pregunta si el mensaje es interrogativo ("¿pica?" vs. "bien picante"). */
+const PALABRAS_PREGUNTA_DEBILES = ["picante", "pica", "trae"];
 
 interface Candidato {
   id: string;
@@ -92,11 +99,21 @@ export function interpretarConReglas(texto: string, carta: PlatoCarta[]): Intenc
   const reconocidos = items.filter((i) => i.platoId || i.candidatos?.length);
 
   // Pregunta sobre un plato (HU04): "¿qué lleva la carapulcra?"
-  if (esPregunta || contieneAlguna(n, PALABRAS_PREGUNTA_PLATO)) {
-    if (contieneAlguna(n, PALABRAS_PREGUNTA_PLATO) && reconocidos.length) {
-      const it = reconocidos[0];
-      return { tipo: "PREGUNTA_PLATO", platoId: it.platoId ?? it.candidatos?.[0], consulta: texto };
-    }
+  const preguntaPlato =
+    contieneAlguna(n, PALABRAS_PREGUNTA_PLATO) || (esPregunta && contieneAlguna(n, PALABRAS_PREGUNTA_DEBILES));
+  if (preguntaPlato && reconocidos.length) {
+    const it = reconocidos[0];
+    return { tipo: "PREGUNTA_PLATO", platoId: it.platoId ?? it.candidatos?.[0], consulta: texto };
+  }
+
+  // Recomendación: "¿qué me recomiendas?"
+  if (/\b(recomi\w*|sugier\w*|sugerencia|especialidad\w*|lo mas pedido|lo mejor)\b/.test(n) && !reconocidos.length) {
+    return { tipo: "RECOMENDAR" };
+  }
+
+  // Cambiar la cantidad de un plato del carrito (RF06): "cambia a 3 chichas", "que sean 2 lomos"
+  if (/^(cambia\w*|mejor|que sean|ponle|ponlo|pon)\b/.test(n) && reconocidos.length) {
+    return { tipo: "CAMBIAR_CANTIDAD", items: reconocidos };
   }
 
   const tieneVerbo = contieneAlguna(n, VERBOS_PEDIDO);

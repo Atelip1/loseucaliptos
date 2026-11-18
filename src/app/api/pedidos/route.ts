@@ -11,15 +11,25 @@ export function GET(req: Request) {
   const url = new URL(req.url);
   return manejar(async () => {
     const k = contenedor();
+    // Pedidos de un cliente (contexto del pedido en el panel de atención)
+    const telefono = url.searchParams.get("telefono");
+    if (telefono) {
+      const lista = await k.deps.pedidos.listar({ clienteTelefono: telefono });
+      return { pedidos: lista.sort((a, b) => b.creadoEn.localeCompare(a.creadoEn)).slice(0, 10) };
+    }
     const sede = requerido(url.searchParams.get("sede"), "la sede");
     const vista = url.searchParams.get("vista") ?? "dia";
     const config = await k.deps.configuracion.obtener();
     let pedidos;
-    if (vista === "cocina") pedidos = await k.pedidos.pendientesCocina(sede);
+    let cancelados: Awaited<ReturnType<typeof k.pedidos.canceladosRecientes>> = [];
+    if (vista === "cocina") {
+      pedidos = await k.pedidos.pendientesCocina(sede);
+      cancelados = await k.pedidos.canceladosRecientes(sede);
+    }
     else if (vista === "caja") pedidos = await k.pedidos.pendientesDeCobro(sede);
     else if (vista === "delivery") pedidos = await k.pedidos.deliveryActivos(sede);
     else pedidos = (await k.pedidos.delDia(sede, url.searchParams.get("fecha") ?? undefined)).reverse();
-    return { pedidos, ahora: k.deps.reloj.ahora().toISOString(), tiempoObjetivoMin: config.tiempoObjetivoCocinaMin };
+    return { pedidos, cancelados, ahora: k.deps.reloj.ahora().toISOString(), tiempoObjetivoMin: config.tiempoObjetivoCocinaMin };
   });
 }
 

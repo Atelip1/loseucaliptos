@@ -3,8 +3,9 @@ import { randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { ErrorDeDominio } from "@/domain/dinero";
+import { carpetaDatos } from "./contenedor";
 
-const CARPETA = path.join(process.cwd(), "data", "comprobantes");
+const carpeta = () => path.join(carpetaDatos(), "comprobantes");
 const TIPOS: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -15,8 +16,8 @@ export async function guardarImagen(dataUrl: string): Promise<string> {
   const bytes = Buffer.from(m[2], "base64");
   if (bytes.length > MAX_BYTES) throw new ErrorDeDominio("La imagen supera los 5 MB.");
   const nombre = `${randomUUID()}.${TIPOS[m[1]]}`;
-  await fs.mkdir(CARPETA, { recursive: true });
-  await fs.writeFile(path.join(CARPETA, nombre), bytes);
+  await fs.mkdir(carpeta(), { recursive: true });
+  await fs.writeFile(path.join(carpeta(), nombre), bytes);
   return `local:${nombre}`;
 }
 
@@ -27,7 +28,7 @@ export async function leerImagen(ref: string): Promise<{ bytes: Buffer; tipo: st
     const ext = nombre.split(".").pop() ?? "";
     const tipo = Object.entries(TIPOS).find(([, e]) => e === ext)?.[0] ?? "application/octet-stream";
     try {
-      return { bytes: await fs.readFile(path.join(CARPETA, nombre)), tipo };
+      return { bytes: await fs.readFile(path.join(carpeta(), nombre)), tipo };
     } catch {
       return null;
     }

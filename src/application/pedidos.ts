@@ -149,6 +149,13 @@ export class ServicioPedidos {
     return lista.sort((a, b) => a.creadoEn.localeCompare(b.creadoEn));
   }
 
+  /** CU13 2a: pedidos cancelados en los últimos minutos, para avisar a cocina. */
+  async canceladosRecientes(sedeId: string, minutos = 15) {
+    const limite = new Date(this.d.reloj.ahora().getTime() - minutos * 60_000).toISOString();
+    const lista = await this.d.pedidos.listar({ sedeId, estados: ["CANCELADO"] });
+    return lista.filter((p) => p.actualizadoEn >= limite).sort((a, b) => b.actualizadoEn.localeCompare(a.actualizadoEn));
+  }
+
   /** Pedidos de la sede sin cobrar y no cancelados (HU12). */
   async pendientesDeCobro(sedeId: string) {
     const lista = await this.d.pedidos.listar({ sedeId });
